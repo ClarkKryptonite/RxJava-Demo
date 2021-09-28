@@ -34,15 +34,11 @@ public class DifferentEmitter extends BaseTest {
                         emitter1.onNext(1);
                         emitter.onNext(2);
                         emitter1.onNext(3);
-                    }).subscribe(s -> {
-                        System.out.println("subscribe 1 :" + s);
-                    });
+                    }).subscribe(s -> System.out.println("subscribe 1 :" + s));
                     emitter.onNext(4);
                 }).subscribeOn(Schedulers.io())
                 .observeOn(Schedulers.single())
-                .subscribe(s -> {
-                    System.out.println("subscribe 0 :" + s);
-                });
+                .subscribe(s -> System.out.println("subscribe 0 :" + s));
     }
 
     /**
@@ -75,9 +71,7 @@ public class DifferentEmitter extends BaseTest {
                     emitter.onComplete();
                 }).subscribeOn(Schedulers.io())
                 .observeOn(Schedulers.single())
-                .subscribe(o -> {
-                    System.out.println("subscribe 1-1");
-                });
+                .subscribe(o -> System.out.println("subscribe 1-1"));
     }
 
     /**

@@ -3,9 +3,9 @@ package com.example.test;
 import io.reactivex.rxjava3.annotations.NonNull;
 import io.reactivex.rxjava3.core.*;
 import io.reactivex.rxjava3.disposables.Disposable;
-import io.reactivex.rxjava3.disposables.DisposableContainer;
 import io.reactivex.rxjava3.observables.ConnectableObservable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 
 import java.text.SimpleDateFormat;
@@ -41,7 +41,7 @@ public class OperationTest extends BaseTest {
                         }),
                         Observable.just(4, 5, 6)
                 )
-                .subscribe(new Observer<Integer>() {
+                .subscribe(new Observer<>() {
 
                     @Override
                     public void onSubscribe(@NonNull Disposable d) {
@@ -88,7 +88,7 @@ public class OperationTest extends BaseTest {
                 .doOnNext(integer -> System.out.println("doOnNext: " + integer))
                 .map(integer -> integer + " hhh")
                 .doOnNext(s -> System.out.println("doOnNext2:" + s))
-                .subscribe(new Observer<String>() {
+                .subscribe(new Observer<>() {
                     @Override
                     public void onSubscribe(@NonNull Disposable d) {
                         System.out.println("onSubscribe:");
@@ -136,12 +136,8 @@ public class OperationTest extends BaseTest {
                 .map(i -> "map:" + i)
                 .doOnComplete(() -> System.out.println("doOnComplete 111"))
                 .subscribe(o -> System.out.println("onNext:" + o),
-                        t -> {
-                            System.out.println(t.getMessage());
-                        },
-                        () -> {
-                            System.out.println("onComplete");
-                        });
+                        t -> System.out.println(t.getMessage()),
+                        () -> System.out.println("onComplete"));
     }
 
     /**
@@ -175,12 +171,11 @@ public class OperationTest extends BaseTest {
         }).subscribeOn(Schedulers.io());
 
         Observable.concat(integerObservable, stringObservable)
-                .subscribe(s -> {
-                    System.out.println("concat subscribe: " + s);
-                }, t -> {
-                }, () -> {
-                    System.out.println("concat complete");
-                });
+                .subscribe(
+                        s -> System.out.println("concat subscribe: " + s),
+                        t -> {},
+                        () -> System.out.println("concat complete")
+                );
     }
 
     /**
@@ -220,7 +215,8 @@ public class OperationTest extends BaseTest {
         }).subscribeOn(Schedulers.io());
 
         Observable.merge(integerObservable, stringObservable)
-                .subscribe(s -> System.out.println("merge onNext: " + s),
+                .subscribe(
+                        s -> System.out.println("merge onNext: " + s),
                         t -> System.out.println(t.getMessage()),
                         () -> System.out.println("merge complete")
                 );
@@ -336,7 +332,8 @@ public class OperationTest extends BaseTest {
         Observable<Integer> o1 = Observable.just(1, 2, 3);
         Observable<Integer> o2 = Observable.just(4, 5, 6);
 
-        o1.join(
+        o1
+                .join(
                         o2,
                         integer -> Observable.just(String.valueOf(integer)).delay(200, TimeUnit.MILLISECONDS),
                         integer -> Observable.just(String.valueOf(integer)).delay(200, TimeUnit.MILLISECONDS),
@@ -396,19 +393,19 @@ public class OperationTest extends BaseTest {
 
         ConnectableObservable<Long> connectableObservable = observable.publish();
 
-        connectableObservable.subscribe(new Observer<Long>() {
+        connectableObservable.subscribe(new Observer<>() {
             @Override
             public void onSubscribe(Disposable d) {
 
             }
 
             @Override
-            public void onNext(Long aLong) {
+            public void onNext(@NotNull Long aLong) {
                 System.out.println("onNext1:" + aLong + "->time:" + format.format(new Date()));
             }
 
             @Override
-            public void onError(Throwable e) {
+            public void onError(@NotNull Throwable e) {
                 System.out.println("e1:" + e.getMessage());
             }
 
@@ -419,19 +416,19 @@ public class OperationTest extends BaseTest {
         });
 
         connectableObservable.delaySubscription(3, TimeUnit.SECONDS)
-                .subscribe(new Observer<Long>() {
+                .subscribe(new Observer<>() {
                     @Override
                     public void onSubscribe(Disposable d) {
 
                     }
 
                     @Override
-                    public void onNext(Long aLong) {
+                    public void onNext(@NotNull Long aLong) {
                         System.out.println("onNext2:" + aLong + "->time:" + format.format(new Date()));
                     }
 
                     @Override
-                    public void onError(Throwable e) {
+                    public void onError(@NotNull Throwable e) {
                         System.out.println("e2:" + e.getMessage());
                     }
 
@@ -485,19 +482,19 @@ public class OperationTest extends BaseTest {
 
         Observable<Long> obsRefCount = connectableObservable.refCount();
 
-        obs.subscribe(new Observer<Long>() {
+        obs.subscribe(new Observer<>() {
             @Override
-            public void onSubscribe(Disposable d) {
+            public void onSubscribe(@NotNull Disposable d) {
 
             }
 
             @Override
-            public void onNext(Long aLong) {
+            public void onNext(@NotNull Long aLong) {
                 System.out.println("Next#1: " + aLong + "->time:" + format.format(new Date()));
             }
 
             @Override
-            public void onError(Throwable e) {
+            public void onError(@NotNull Throwable e) {
                 System.out.println("Error: " + e);
             }
 
@@ -508,19 +505,19 @@ public class OperationTest extends BaseTest {
         });
 
         obs.delaySubscription(3, TimeUnit.SECONDS)
-                .subscribe(new Observer<Long>() {
+                .subscribe(new Observer<>() {
                     @Override
-                    public void onSubscribe(Disposable d) {
+                    public void onSubscribe(@NotNull Disposable d) {
 
                     }
 
                     @Override
-                    public void onNext(Long aLong) {
+                    public void onNext(@NotNull Long aLong) {
                         System.out.println("Next#2: " + aLong + "->time:" + format.format(new Date()));
                     }
 
                     @Override
-                    public void onError(Throwable e) {
+                    public void onError(@NotNull Throwable e) {
                         System.out.println("Error: " + e);
                     }
 
@@ -530,19 +527,19 @@ public class OperationTest extends BaseTest {
                     }
                 });
 
-        obsRefCount.subscribe(new Observer<Long>() {
+        obsRefCount.subscribe(new Observer<>() {
             @Override
-            public void onSubscribe(Disposable d) {
+            public void onSubscribe(@NotNull Disposable d) {
 
             }
 
             @Override
-            public void onNext(Long aLong) {
+            public void onNext(@NotNull Long aLong) {
                 System.out.println("Next#3: " + aLong + "->time:" + format.format(new Date()));
             }
 
             @Override
-            public void onError(Throwable e) {
+            public void onError(@NotNull Throwable e) {
                 System.out.println("Error: " + e);
             }
 
@@ -553,19 +550,19 @@ public class OperationTest extends BaseTest {
         });
 
         obsRefCount.delaySubscription(3, TimeUnit.SECONDS)
-                .subscribe(new Observer<Long>() {
+                .subscribe(new Observer<>() {
                     @Override
-                    public void onSubscribe(Disposable d) {
+                    public void onSubscribe(@NotNull Disposable d) {
 
                     }
 
                     @Override
-                    public void onNext(Long aLong) {
+                    public void onNext(@NotNull Long aLong) {
                         System.out.println("Next#4: " + aLong + "->time:" + format.format(new Date()));
                     }
 
                     @Override
-                    public void onError(Throwable e) {
+                    public void onError(@NotNull Throwable e) {
                         System.out.println("Error: " + e);
                     }
 
@@ -606,19 +603,19 @@ public class OperationTest extends BaseTest {
 
         connectableObservable.connect();
 
-        connectableObservable.subscribe(new Observer<Long>() {
+        connectableObservable.subscribe(new Observer<>() {
             @Override
-            public void onSubscribe(Disposable d) {
+            public void onSubscribe(@NotNull Disposable d) {
 
             }
 
             @Override
-            public void onNext(Long aLong) {
+            public void onNext(@NotNull Long aLong) {
                 System.out.println("Next#1: " + aLong + "->time:" + format.format(new Date()));
             }
 
             @Override
-            public void onError(Throwable e) {
+            public void onError(@NotNull Throwable e) {
                 System.out.println("Error: " + e);
             }
 
@@ -629,19 +626,19 @@ public class OperationTest extends BaseTest {
         });
 
         connectableObservable.delaySubscription(3, TimeUnit.SECONDS)
-                .subscribe(new Observer<Long>() {
+                .subscribe(new Observer<>() {
                     @Override
-                    public void onSubscribe(Disposable d) {
+                    public void onSubscribe(@NotNull Disposable d) {
 
                     }
 
                     @Override
-                    public void onNext(Long aLong) {
+                    public void onNext(@NotNull Long aLong) {
                         System.out.println("Next#2: " + aLong + "->time:" + format.format(new Date()));
                     }
 
                     @Override
-                    public void onError(Throwable e) {
+                    public void onError(@NotNull Throwable e) {
                         System.out.println("Error: " + e);
                     }
 
@@ -705,9 +702,7 @@ public class OperationTest extends BaseTest {
         for (int i = 0; i < 26; i++) {
             char c = (char) (65 + i);
             StringBuilder builder = new StringBuilder();
-            for (int j = 0; j < 5; j++) {
-                builder.append(c);
-            }
+            builder.append(String.valueOf(c).repeat(5));
             list.add(builder.toString());
         }
         Observable.fromIterable(list)

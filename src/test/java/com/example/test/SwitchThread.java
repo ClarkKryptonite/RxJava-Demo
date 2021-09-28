@@ -53,11 +53,10 @@ public class SwitchThread extends BaseTest {
                     return "Map2 -- " + s;
                 })
                 .observeOn(Schedulers.single())
-                .subscribe(s -> {
-                    System.out.println(s + " thread:" + Thread.currentThread().getName());
-                }, throwable -> {
-                    System.out.println(throwable.getMessage() + " thread:" + Thread.currentThread().getName());
-                });
+                .subscribe(
+                        s -> System.out.println(s + " thread:" + Thread.currentThread().getName()),
+                        throwable -> System.out.println(throwable.getMessage() + " thread:" + Thread.currentThread().getName())
+                );
     }
 
     /**
@@ -102,8 +101,6 @@ public class SwitchThread extends BaseTest {
                     return result1 + result2;
                 })
                 .observeOn(Schedulers.single())
-                .subscribe(result -> {
-                    System.out.println("onNext:" + result + " thread:" + Thread.currentThread().getName());
-                });
+                .subscribe(result -> System.out.println("onNext:" + result + " thread:" + Thread.currentThread().getName()));
     }
 }
