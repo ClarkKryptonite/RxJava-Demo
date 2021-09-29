@@ -3,14 +3,17 @@ package com.example.test;
 import io.reactivex.rxjava3.annotations.NonNull;
 import io.reactivex.rxjava3.core.*;
 import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.functions.Function;
 import io.reactivex.rxjava3.observables.ConnectableObservable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 
+import java.sql.Array;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 public class OperationTest extends BaseTest {
@@ -173,7 +176,8 @@ public class OperationTest extends BaseTest {
         Observable.concat(integerObservable, stringObservable)
                 .subscribe(
                         s -> System.out.println("concat subscribe: " + s),
-                        t -> {},
+                        t -> {
+                        },
                         () -> System.out.println("concat complete")
                 );
     }
@@ -192,6 +196,11 @@ public class OperationTest extends BaseTest {
      * error!!!!
      * }
      * </pre>
+     * 注意：
+     * 调用{@code onError()}后如果stringObservable处于TimeUnit.MILLISECONDS.sleep();中会报
+     * <blockquote><pre>
+     *  io.reactivex.rxjava3.exceptions.UndeliverableException
+     * </pre></blockquote>
      */
     @Test
     public void testMerge() {
@@ -200,7 +209,7 @@ public class OperationTest extends BaseTest {
             emitter.onNext(0);
             TimeUnit.MILLISECONDS.sleep(10);
             emitter.onNext(1);
-            TimeUnit.MILLISECONDS.sleep(30);
+            TimeUnit.MILLISECONDS.sleep(10);
             emitter.onNext(2);
             emitter.onError(new Throwable("error!!!!"));
         }).map(integer -> "Integer" + integer).subscribeOn(Schedulers.io());
@@ -247,7 +256,7 @@ public class OperationTest extends BaseTest {
         ).subscribe(
                 integer -> System.out.println("onNext:" + integer),
                 throwable -> System.out.println("onError:" + throwable),
-                () -> System.out.println("onComplete thread:"+Thread.currentThread().getName())
+                () -> System.out.println("onComplete thread:" + Thread.currentThread().getName())
         );
     }
 
@@ -800,5 +809,74 @@ public class OperationTest extends BaseTest {
                         System.out::println,
                         error -> System.err.println("onError should not be printed!")
                 );
+    }
+
+    /**
+     * <pre>result:
+     * {@code
+     * emitter onNext:[NNNNNNNNNN, VVVVVVV, WWWWWWWWWW, P, WW]
+     * flatMapIterable
+     * map:NNNNNNNNNN
+     * map:VVVVVVV
+     * map:WWWWWWWWWW
+     * map:P
+     * map:WW
+     * emitter onError
+     * flatMapIterable
+     * map:ABCDE
+     * next:[10, 7, 10, 1, 2, 5]
+     * </pre>
+     */
+    @Test
+    public void testOnErrorReturnItemDownStreamExecute() {
+        Observable
+                .<List<String>>create(emitter -> {
+                    List<String> list = generateStringList(5);
+                    System.out.println("emitter onNext:" + list);
+                    emitter.onNext(list);
+                    System.out.println("emitter onError");
+                    emitter.onError(new Throwable("error coming"));
+                })
+                .onErrorReturn(throwable -> {
+                    List<String> list = new ArrayList<>();
+                    list.add("ABCDE");
+                    return list;
+                })
+                .flatMapIterable(list -> {
+                    System.out.println("flatMapIterable");
+                    return list;
+                })
+                .map(s -> {
+                    System.out.println("map:" + s);
+                    return s.length();
+                })
+                .toList().toObservable()
+                .subscribe(
+                        integer -> System.out.println("next:" + integer),
+                        throwable -> System.out.println("error:" + throwable)
+                );
+    }
+
+    /**
+     * <pre>result:
+     * {@code
+     * Subscribe0 onNext:1
+     * Subscribe0 onNext:2
+     * Subscribe0 onNext:3
+     * Subscribe0 onNext:4
+     * Subscribe1 onNext:1
+     * Subscribe1 onNext:2
+     * Subscribe1 onNext:3
+     * Subscribe1 onNext:4
+     * }
+     * </pre>
+     */
+    @Test
+    public void testDifferentSubscriber() throws InterruptedException {
+        Observable<Integer> observable = Observable.just(1, 2, 3, 4);
+
+        observable.subscribe(integer -> System.out.println("Subscribe0 onNext:" + integer));
+        TimeUnit.SECONDS.sleep(1);
+        observable.subscribe(integer -> System.out.println("Subscribe1 onNext:" + integer));
     }
 }
