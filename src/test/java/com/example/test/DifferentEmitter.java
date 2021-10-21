@@ -121,4 +121,64 @@ public class DifferentEmitter extends BaseTest {
                         () -> System.out.println("subscribe 0 onComplete")
                 );
     }
+
+    /**
+     * <pre>result:
+     * {@code
+     * emitter1 onNext:0
+     * emitter 0 onNext:String 0
+     * emitter 0 onNext:String 1
+     * emitter is Disposed ? false
+     * emitter1 onNext:1
+     * emitter 0 onNext:0
+     * emitter is Disposed ? false
+     * emitter1 onNext:2
+     * emitter is Disposed ? false
+     * emitter 0 onNext:1
+     * emitter 0 onNext:2
+     * subscribe 1 onComplete
+     * emitter is Disposed ? false
+     * emitter 0 onComplete
+     * }
+     * </pre>
+     */
+    @Test
+    public void testDifferentEmitterIsDispose() {
+        Observable
+                .<String>create(emitter -> {
+                    emitter.onNext("String 0");
+                    emitter.onNext("String 1");
+                    Observable
+                            .<Integer>create(emitter1 -> {
+                                emitter1.onNext(0);
+                                emitter1.onNext(1);
+                                emitter1.onNext(2);
+                                emitter1.onComplete();
+                            })
+                            .subscribe(
+                                    integer -> {
+                                        System.out.println("emitter1 onNext:" + integer);
+                                        System.out.println("emitter is Disposed ? "+emitter.isDisposed());
+                                        emitter.onNext(integer.toString());
+                                    },
+                                    throwable -> {
+                                        System.out.println("subscribe 1 onError:" + throwable.getMessage());
+                                        emitter.onError(throwable);
+                                    },
+                                    () -> {
+                                        System.out.println("subscribe 1 onComplete");
+                                        System.out.println("emitter is Disposed ? "+emitter.isDisposed());
+                                        emitter.onComplete();
+                                    }
+                            );
+                    emitter.onNext("String 2");
+                })
+                .subscribeOn(Schedulers.io())
+                .observeOn(Schedulers.single())
+                .subscribe(
+                        string -> System.out.println("emitter 0 onNext:" + string),
+                        throwable -> System.out.println("emitter 0 onError:" + throwable.getMessage()),
+                        () -> System.out.println("emitter 0 onComplete")
+                );
+    }
 }
