@@ -103,4 +103,37 @@ public class SwitchThread extends BaseTest {
                 .observeOn(Schedulers.single())
                 .subscribe(result -> System.out.println("onNext:" + result + " thread:" + Thread.currentThread().getName()));
     }
+
+    /**
+     * <pre> result:
+     * {@code
+     * doOnNext1 thread:RxSingleScheduler-1
+     * doOnNext2 thread:RxCachedThreadScheduler-2
+     * doOnNext3 thread:RxSingleScheduler-1
+     * onNext: 1
+     * }
+     * </pre>
+     */
+    @Test
+    public void testFlatThread() {
+        testFlatMethod1()
+                .doOnNext(integer -> System.out.println("doOnNext1 thread:" + Thread.currentThread().getName()))
+                .observeOn(Schedulers.io())
+                .doOnNext(integer -> System.out.println("doOnNext2 thread:" + Thread.currentThread().getName()))
+                .flatMap(this::testFlatMethod2)
+                .doOnNext(s -> System.out.println("doOnNext3 thread:" + Thread.currentThread().getName()))
+                .subscribe(result -> System.out.println("onNext: " + result));
+    }
+
+    private Observable<Integer> testFlatMethod1() {
+        return Observable.just(1)
+                .subscribeOn(Schedulers.io())
+                .observeOn(Schedulers.single());
+    }
+
+    private Observable<String> testFlatMethod2(int i) {
+        return Observable.just(Integer.toString(i))
+                .subscribeOn(Schedulers.io())
+                .observeOn(Schedulers.single());
+    }
 }

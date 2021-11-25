@@ -1,7 +1,6 @@
 package com.example.test;
 
 import io.reactivex.rxjava3.core.Observable;
-import io.reactivex.rxjava3.functions.Consumer;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import org.junit.jupiter.api.Test;
 
@@ -158,7 +157,7 @@ public class DifferentEmitter extends BaseTest {
                             .subscribe(
                                     integer -> {
                                         System.out.println("emitter1 onNext:" + integer);
-                                        System.out.println("emitter is Disposed ? "+emitter.isDisposed());
+                                        System.out.println("emitter is Disposed ? " + emitter.isDisposed());
                                         emitter.onNext(integer.toString());
                                     },
                                     throwable -> {
@@ -167,7 +166,7 @@ public class DifferentEmitter extends BaseTest {
                                     },
                                     () -> {
                                         System.out.println("subscribe 1 onComplete");
-                                        System.out.println("emitter is Disposed ? "+emitter.isDisposed());
+                                        System.out.println("emitter is Disposed ? " + emitter.isDisposed());
                                         emitter.onComplete();
                                     }
                             );

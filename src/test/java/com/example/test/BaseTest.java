@@ -5,13 +5,14 @@ import org.junit.jupiter.api.AfterEach;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 public class BaseTest {
     private final Random random = new Random();
 
     @AfterEach
     public void interruptMainThread() throws InterruptedException {
-        Thread.currentThread().join();
+        TimeUnit.SECONDS.sleep(10);
     }
 
     List<String> generateStringList() {
@@ -29,10 +30,15 @@ public class BaseTest {
     }
 
     private String generateRepeatChar(char c, int repeatCount) {
-        StringBuilder builder = new StringBuilder();
-        for (int i = 0; i < repeatCount; i++) {
-            builder.append(c);
+        return String.valueOf(c).repeat(Math.max(0, repeatCount));
+    }
+
+    List<Integer> generateIntList(int size) {
+        List<Integer> list = new ArrayList<>();
+        for (int i = 0; i < size; i++) {
+            int randomInt = random.nextInt(100);
+            list.add(randomInt);
         }
-        return builder.toString();
+        return list;
     }
 }
