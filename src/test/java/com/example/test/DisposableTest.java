@@ -27,4 +27,42 @@ public class DisposableTest extends BaseTest {
 
         System.out.println("Disposable isDisposable?" + disposable.isDisposed());
     }
+
+    /**
+     * <pre>
+     * {@code
+     * Start....
+     * onNext:String 0---0
+     * onNext:String 1---1
+     * Dispose end
+     * }
+     * </pre>
+     */
+    @Test
+    public void testZipDisposable() throws InterruptedException {
+        Disposable disposable = Observable.zip(
+                        Observable.<Integer>create(emitter -> {
+                            emitter.onNext(0);
+                            emitter.onNext(1);
+                            TimeUnit.SECONDS.sleep(3);
+                            emitter.onNext(2);
+                        }).subscribeOn(Schedulers.io()),
+                        Observable.<String>create(emitter -> {
+                            emitter.onNext("String 0");
+                            emitter.onNext("String 1");
+                            TimeUnit.SECONDS.sleep(2);
+                            emitter.onNext("String 2");
+                        }).subscribeOn(Schedulers.io()),
+                        (i, str) -> str + "---" + i
+                )
+                .subscribeOn(Schedulers.io())
+                .subscribe(
+                        str -> System.out.println("onNext:" + str),
+                        throwable -> System.err.println("onError:" + throwable.getMessage())
+                );
+        System.out.println("Start....");
+        TimeUnit.SECONDS.sleep(1);
+        disposable.dispose();
+        System.out.println("Dispose end");
+    }
 }
