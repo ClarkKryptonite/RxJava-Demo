@@ -877,4 +877,142 @@ public class OperationTest extends BaseTest {
         TimeUnit.SECONDS.sleep(1);
         observable.subscribe(integer -> System.out.println("Subscribe1 onNext:" + integer));
     }
+
+    /**
+     * <pre>
+     * {@code
+     * onError:Error
+     * }</pre>
+     */
+    @Test
+    public void testComplete() {
+        Observable.error(new Throwable("Error"))
+                .subscribe(
+                        i -> System.out.println("onNext:" + i),
+                        t -> System.err.println("onError:" + t.getMessage()),
+                        () -> System.out.println("onComplete")
+                );
+    }
+
+    /**
+     * <pre>
+     * {@code
+     * just onNext:1
+     * just onNext:2
+     * just onNext:3
+     * just onComplete
+     * --- FINALLY JUST ---
+     * Error onError:Error!!!!!
+     * --- FINALLY ERROR ---
+     * --- FINALLY DISPOSABLE ---
+     * }
+     * </pre>
+     */
+    @Test
+    public void testDoFinally() throws InterruptedException {
+        Observable.just(1, 2, 3)
+                .doFinally(() -> System.out.println("--- FINALLY JUST ---"))
+                .subscribeOn(Schedulers.io())
+                .subscribe(
+                        integer -> System.out.println("just onNext:" + integer),
+                        throwable -> System.err.println("just onError:" + throwable.getMessage()),
+                        () -> System.out.println("just onComplete")
+                );
+
+        Observable.error(new Throwable("Error!!!!!"))
+                .doFinally(() -> System.out.println("--- FINALLY ERROR ---"))
+                .subscribeOn(Schedulers.io())
+                .subscribe(
+                        integer -> System.out.println("Error onNext:" + integer),
+                        throwable -> System.err.println("Error onError:" + throwable.getMessage()),
+                        () -> System.out.println("Error onComplete")
+                );
+
+        Disposable d = Observable.just(1, 2, 3)
+                .doFinally(() -> System.out.println("--- FINALLY DISPOSABLE ---"))
+                .delay(3, TimeUnit.SECONDS)
+                .subscribeOn(Schedulers.io())
+                .subscribe(
+                        integer -> System.out.println("disposable onNext:" + integer),
+                        throwable -> System.err.println("disposable onError:" + throwable.getMessage()),
+                        () -> System.out.println("disposable onComplete")
+                );
+
+        TimeUnit.SECONDS.sleep(2);
+        d.dispose();
+    }
+
+    /**
+     * <pre>
+     * {@code
+     * just onNext:1
+     * just onNext:2
+     * just onNext:3
+     * just onComplete
+     * --- AFTER TERMINATE JUST ---
+     * Error onError:Error!!!!!
+     * --- AFTER TERMINATE ERROR ---
+     * --- AFTER TERMINATE DISPOSABLE ---
+     * }
+     * </pre>
+     */
+    @Test
+    public void testDoAfterTerminate() throws InterruptedException {
+        Observable.just(1, 2, 3)
+                .doAfterTerminate(() -> System.out.println("--- AFTER TERMINATE JUST ---"))
+                .subscribeOn(Schedulers.io())
+                .subscribe(
+                        integer -> System.out.println("just onNext:" + integer),
+                        throwable -> System.err.println("just onError:" + throwable.getMessage()),
+                        () -> System.out.println("just onComplete")
+                );
+
+        Observable.error(new Throwable("Error!!!!!"))
+                .doAfterTerminate(() -> System.out.println("--- AFTER TERMINATE ERROR ---"))
+                .subscribeOn(Schedulers.io())
+                .subscribe(
+                        integer -> System.out.println("Error onNext:" + integer),
+                        throwable -> System.err.println("Error onError:" + throwable.getMessage()),
+                        () -> System.out.println("Error onComplete")
+                );
+
+        Disposable d = Observable.just(1, 2, 3)
+                .doAfterTerminate(() -> System.out.println("--- AFTER TERMINATE DISPOSABLE ---"))
+                .delay(3, TimeUnit.SECONDS)
+                .subscribeOn(Schedulers.io())
+                .subscribe(
+                        integer -> System.out.println("disposable onNext:" + integer),
+                        throwable -> System.err.println("disposable onError:" + throwable.getMessage()),
+                        () -> System.out.println("disposable onComplete")
+                );
+
+        TimeUnit.SECONDS.sleep(2);
+        d.dispose();
+    }
+
+    /**
+     * <pre>
+     * {@code
+     * Error onError:Error!!!!!
+     * --- AFTER TERMINATE ERROR 2 ---
+     * --- FINALLY ERROR 2 ---
+     * --- AFTER TERMINATE ERROR 1 ---
+     * --- FINALLY ERROR 1 ---
+     * }
+     * </pre>
+     */
+    @Test
+    public void testFinallyAndAfterTerminateOrder() {
+        Observable.error(new Throwable("Error!!!!!"))
+                .doFinally(()-> System.out.println("--- FINALLY ERROR 1 ---"))
+                .doAfterTerminate(() -> System.out.println("--- AFTER TERMINATE ERROR 1 ---"))
+                .doFinally(()-> System.out.println("--- FINALLY ERROR 2 ---"))
+                .doAfterTerminate(() -> System.out.println("--- AFTER TERMINATE ERROR 2 ---"))
+                .subscribeOn(Schedulers.io())
+                .subscribe(
+                        integer -> System.out.println("Error onNext:" + integer),
+                        throwable -> System.err.println("Error onError:" + throwable.getMessage()),
+                        () -> System.out.println("Error onComplete")
+                );
+    }
 }
