@@ -1015,4 +1015,25 @@ public class OperationTest extends BaseTest {
                         () -> System.out.println("Error onComplete")
                 );
     }
+
+    /**
+     * <pre>
+     * {@code
+     * list:[17, 69, 78, 91, 8, 12, 23, 61, 38, 20]
+     * onComplete
+     * }
+     * </pre>
+     */
+    @Test
+    public void testFilterNoResult() {
+        List<Integer> list = generateIntList(10);
+        System.out.println("list:"+list);
+        Observable.fromIterable(list)
+                .filter(integer -> integer < 0)
+                .subscribe(
+                        System.out::println,
+                        System.err::println,
+                        ()-> System.out.println("onComplete")
+                );
+    }
 }

@@ -180,4 +180,28 @@ public class DifferentEmitter extends BaseTest {
                         () -> System.out.println("emitter 0 onComplete")
                 );
     }
+
+    /**
+     * <pre>
+     * {@code
+     * onNext:0
+     * io.reactivex.rxjava3.exceptions.OnErrorNotImplementedException
+     * }
+     * </pre>
+     */
+    @Test
+    public void testNestObservableErrorNoHandle() {
+        Observable
+                .<Integer>create(emitter -> {
+                    emitter.onNext(0);
+                    Observable
+                            .<String>error(new Throwable("Nest error"))
+                            .subscribe(str -> System.out.println("nest onNext:"+str));
+                })
+                .subscribeOn(Schedulers.io())
+                .subscribe(
+                        integer -> System.out.println("onNext:" + integer),
+                        throwable -> System.out.println("onError:" + throwable.getMessage())
+                );
+    }
 }
