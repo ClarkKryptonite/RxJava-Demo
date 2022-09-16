@@ -85,6 +85,7 @@ public class DifferentEmitter extends BaseTest {
      * Observable 1 emitter error
      * subscribe 1 onError:Observable 1 error
      * subscribe 0 onError:Observable 1 error
+     * Observable 1 emitter onComplete
      * }
      * </pre>
      */
@@ -100,6 +101,7 @@ public class DifferentEmitter extends BaseTest {
                                 emitter1.onNext(200);
                                 System.out.println("Observable 1 emitter error");
                                 emitter1.onError(new Throwable("Observable 1 error"));
+                                System.out.println("Observable 1 emitter onComplete");
                                 emitter1.onComplete();
                             })
                             .subscribe(
