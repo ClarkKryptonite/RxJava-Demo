@@ -428,4 +428,34 @@ class KotlinTest : BaseTest() {
             null
         }.subscribeNextAndError()
     }
+
+    /**
+     * ```shell
+    1 onNext 0
+    2 onNext
+    subscribe:0
+    2 onComplete
+    1 onComplete
+     * ```
+     */
+    @Test
+    fun testFlatMapComplete() {
+        Observable.create<Int> {
+            println("1 onNext 0")
+            it.onNext(0)
+            println("1 onComplete")
+            it.onComplete()
+        }.flatMap { value ->
+            Observable.create<String> {
+                println("2 onNext")
+                it.onNext(value.toString())
+                println("2 onComplete")
+                it.onComplete()
+            }
+        }.subscribe({
+            println("subscribe:$it")
+        }, {
+
+        })
+    }
 }
